@@ -1,0 +1,40 @@
+version: '3.4'
+
+networks:
+  dev:
+    driver: bridge
+
+services:
+  loyalty-app: 
+    image: docker.io/library/loyaltyapp
+    depends_on:
+      - "db_server"
+    container_name: loyaltyapp-services
+    ports:
+      - "8088:80"
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ConnectionStrings__Default=Server=db_server;Port=5432;Database=loyaltydb;User Id=postgres;Password=postgres;IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=http://+:80
+    networks:
+      - dev
+
+  db_server:
+    image: postgres:latest
+    container_name: db_server
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: loyaltydb
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - app_data:/var/lib/postgresql/data
+    networks:
+      - dev
+
+volumes:
+  app_data:
